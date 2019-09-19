@@ -5,6 +5,7 @@ import io.restassured.http.Method;
 import io.restassured.response.Response;
 import io.restassured.response.ValidatableResponse;
 import org.hamcrest.Matchers;
+import org.hamcrest.core.IsNull;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -63,8 +64,9 @@ public class Teste {
                 .get("http://restapi.wcaquino.me/ola")
                 .then()
                 .statusCode(200)
-                .body(Matchers.is("Ola Mundo!"));
-
+                .body(Matchers.is("Ola Mundo!"))
+                .body(Matchers.containsString("Mundo"))
+                .body(Matchers.is(Matchers.not(Matchers.nullValue())));
     }
 
 }
