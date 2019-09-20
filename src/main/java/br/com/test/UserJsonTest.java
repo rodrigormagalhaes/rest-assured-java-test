@@ -8,6 +8,8 @@ import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.Arrays;
+
 public class UserJsonTest {
 
     @Test
@@ -65,6 +67,31 @@ public class UserJsonTest {
                 .body("filhos[0].name", Matchers.is("Zezinho"))
                 .body("filhos[1].name", Matchers.is("Luizinho"))
                 .body("filhos.name", Matchers.hasItems("Luizinho", "Luizinho"));
+    }
+
+    @Test
+    public void shoulValidateNonexistentUser() {
+        RestAssured.given()
+                .when()
+                .get("http://restapi.wcaquino.me/users/4")
+                .then()
+                .statusCode(404)
+                .body("error", Matchers.is("Usuário inexistente"));
+    }
+
+    @Test
+    public void shoulValidateRootList() {
+        RestAssured.given()
+                .when()
+                .get("http://restapi.wcaquino.me/users")
+                .then()
+                .statusCode(200)
+                .body("$", Matchers.hasSize(3))
+                .body("name", Matchers.hasItems("João da Silva", "Maria Joaquina", "Ana Júlia"))
+                .body("age[1]", Matchers.is(25))
+                .body("filhos.name", Matchers.hasItem(Arrays.asList("Zezinho", "Luizinho")))
+                .body("salary", Matchers.contains(1234.5677f, 2500, null))
+        ;
     }
 
 
