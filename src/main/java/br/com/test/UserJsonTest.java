@@ -70,7 +70,7 @@ public class UserJsonTest {
     }
 
     @Test
-    public void shoulValidateNonexistentUser() {
+    public void shouldValidateNonexistentUser() {
         RestAssured.given()
                 .when()
                 .get("http://restapi.wcaquino.me/users/4")
@@ -80,7 +80,7 @@ public class UserJsonTest {
     }
 
     @Test
-    public void shoulValidateRootList() {
+    public void shouldValidateRootList() {
         RestAssured.given()
                 .when()
                 .get("http://restapi.wcaquino.me/users")
@@ -92,6 +92,35 @@ public class UserJsonTest {
                 .body("filhos.name", Matchers.hasItem(Arrays.asList("Zezinho", "Luizinho")))
                 .body("salary", Matchers.contains(1234.5677f, 2500, null))
         ;
+    }
+
+    @Test
+    public void shouldDoAdvancedValidations() {
+        RestAssured.given()
+                .when()
+                .get("http://restapi.wcaquino.me/users")
+                .then()
+                .statusCode(200)
+                .body("$", Matchers.hasSize(3))
+                .body("age.findAll{it <= 25}.size()", Matchers.is(2))
+                .body("age.findAll{it <= 25 && it > 20}.size()", Matchers.is(1))
+                .body("findAll{it.age <= 25 && it.age > 20}.name", Matchers.hasItem("Maria Joaquina"))
+                .body("findAll{it.age <= 25}[0].name", Matchers.is("Maria Joaquina"))
+                .body("findAll{it.age <= 25}[-1].name", Matchers.is("Ana Júlia"))
+                .body("find{it.age <= 25}.name", Matchers.is("Maria Joaquina"))
+                .body("findAll{it.name.contains('n')}.name", Matchers.hasItems("Maria Joaquina", "Ana Júlia"))
+                .body("findAll{it.name.length() > 10}.name", Matchers.hasItems("Maria Joaquina", "João da Silva"))
+                .body("name.collect{it.toUpperCase()}", Matchers.hasItem("MARIA JOAQUINA"))
+                .body("name.findAll{it.startsWith('Maria')}.collect{it.toUpperCase()}", Matchers.hasItem("MARIA JOAQUINA"))
+                .body("name.findAll{it.startsWith('Maria')}.collect{it.toUpperCase()}.toArray()", Matchers.allOf(Matchers.arrayContaining("MARIA JOAQUINA"), Matchers.arrayWithSize(1)))
+                .body("age.collect{it * 2}", Matchers.hasItems(60, 50 ,40))
+                .body("id.max()", Matchers.is(3))
+                .body("salary.min()", Matchers.is(1234.5678f))
+                .body("salary.findAll{it != null}.sum()", Matchers.is(Matchers.closeTo(3734.5678f, 0.001)))
+                .body("salary.findAll{it != null}.sum()", Matchers.allOf(Matchers.greaterThan(3000d), Matchers.lessThan(5000d)))
+
+        ;
+
     }
 
 
