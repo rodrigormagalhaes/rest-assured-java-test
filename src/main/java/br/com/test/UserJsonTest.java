@@ -8,6 +8,7 @@ import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class UserJsonTest {
@@ -120,6 +121,23 @@ public class UserJsonTest {
                 .body("salary.findAll{it != null}.sum()", Matchers.allOf(Matchers.greaterThan(3000d), Matchers.lessThan(5000d)))
 
         ;
+
+    }
+
+    @Test
+    public void shouldJoinJsonPathWithJava() {
+
+        ArrayList<String> names =
+
+            RestAssured.given()
+                    .when()
+                        .get("http://restapi.wcaquino.me/users")
+                    .then()
+                        .statusCode(200)
+                        .extract().path("name.findAll{it.startsWith('Maria')}")
+                    ;
+
+            Assert.assertEquals(1, names.size());
 
     }
 
