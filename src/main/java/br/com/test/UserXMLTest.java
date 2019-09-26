@@ -1,8 +1,12 @@
 package br.com.test;
 
 import io.restassured.RestAssured;
+import io.restassured.internal.path.xml.NodeImpl;
 import org.hamcrest.Matchers;
+import org.junit.Assert;
 import org.junit.Test;
+
+import java.util.ArrayList;
 
 public class UserXMLTest {
 
@@ -47,5 +51,20 @@ public class UserXMLTest {
                     .body("users.user.name.findAll{it.toString().startsWith('Maria')}.collect{it.toString().toUpperCase()}", Matchers.is("MARIA JOAQUINA"))
 
         ;
+    }
+
+    @Test
+    public void shouldDoAdvancedSearchWithXMLAndJava() {
+        ArrayList<NodeImpl> names =
+            RestAssured.given()
+                    .when()
+                    .get("http://restapi.wcaquino.me/usersXML")
+                    .then()
+                    .statusCode(200)
+                    .extract().path("users.user.name.findAll{it.toString().contains('n')}");
+
+        Assert.assertEquals(2, names.size());
+        Assert.assertEquals("Maria Joaquina".toUpperCase(), names.get(0).toString().toUpperCase());
+        Assert.assertTrue("ANA JULIA".equalsIgnoreCase(names.get(1).toString()));
     }
 }

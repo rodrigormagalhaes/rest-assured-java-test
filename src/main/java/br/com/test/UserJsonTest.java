@@ -126,7 +126,6 @@ public class UserJsonTest {
 
     @Test
     public void shouldJoinJsonPathWithJava() {
-
         ArrayList<String> names =
 
             RestAssured.given()
