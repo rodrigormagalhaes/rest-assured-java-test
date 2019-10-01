@@ -1,22 +1,49 @@
 package br.com.test;
 
 import io.restassured.RestAssured;
+import io.restassured.builder.RequestSpecBuilder;
+import io.restassured.builder.ResponseSpecBuilder;
+import io.restassured.filter.log.LogDetail;
 import io.restassured.internal.path.xml.NodeImpl;
+import io.restassured.specification.RequestSpecification;
+import io.restassured.specification.ResponseSpecification;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import sun.misc.Request;
 
 import java.util.ArrayList;
 
 public class UserXMLTest {
 
+    public static RequestSpecification requestSpecification;
+    public static ResponseSpecification responseSpecification;
+
+    @BeforeClass
+    public static void setUp() {
+        RestAssured.baseURI = "https://restapi.wcaquino.me";
+//        RestAssured.port = 443;
+//        RestAssured.basePath = "/v2";
+
+        RequestSpecBuilder requestSpecBuilder = new RequestSpecBuilder();
+        requestSpecBuilder.log(LogDetail.ALL);
+        requestSpecification = requestSpecBuilder.build();
+
+        ResponseSpecBuilder responseSpecBuilder = new ResponseSpecBuilder();
+        responseSpecBuilder.expectStatusCode(200);
+        responseSpecification = responseSpecBuilder.build();
+
+        RestAssured.requestSpecification = requestSpecification;
+        RestAssured.responseSpecification = responseSpecification;
+    }
+
     @Test
     public void shouldUseXML() {
         RestAssured.given()
                 .when()
-                    .get("http://restapi.wcaquino.me/usersXML/3")
+                    .get("/usersXML/3")
                 .then()
-                    .statusCode(200)
 
                     .rootPath("user")
                     .body("name", Matchers.is("Ana Julia"))
@@ -38,9 +65,8 @@ public class UserXMLTest {
     public void shouldDoAdvancedSearchWithXML() {
         RestAssured.given()
                 .when()
-                    .get("http://restapi.wcaquino.me/usersXML")
+                    .get("/usersXML")
                 .then()
-                    .statusCode(200)
                     .body("users.user.size()", Matchers.is(3))
                     .body("users.user.findAll{it.age.toInteger() <= 25}.size()", Matchers.is(2))
                     .body("users.user.@id", Matchers.hasItems("1", "2", "3"))
@@ -58,7 +84,7 @@ public class UserXMLTest {
         ArrayList<NodeImpl> names =
             RestAssured.given()
                     .when()
-                    .get("http://restapi.wcaquino.me/usersXML")
+                    .get("/usersXML")
                     .then()
                     .statusCode(200)
                     .extract().path("users.user.name.findAll{it.toString().contains('n')}");
