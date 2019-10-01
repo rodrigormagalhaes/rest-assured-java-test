@@ -11,7 +11,6 @@ import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import sun.misc.Request;
 
 import java.util.ArrayList;
 
@@ -92,5 +91,29 @@ public class UserXMLTest {
         Assert.assertEquals(2, names.size());
         Assert.assertEquals("Maria Joaquina".toUpperCase(), names.get(0).toString().toUpperCase());
         Assert.assertTrue("ANA JULIA".equalsIgnoreCase(names.get(1).toString()));
+    }
+
+    @Test
+    public void shouldDoAdvancedSearchWithXPath() {
+        RestAssured.given()
+                .when()
+                .get("http://restapi.wcaquino.me/usersXML")
+                .then()
+                .statusCode(200)
+                .body(Matchers.hasXPath("count(/users/user)", Matchers.is("3")))
+                .body(Matchers.hasXPath("/users/user[@id = 1]"))
+                .body(Matchers.hasXPath("//user[@id = 2]"))
+                .body(Matchers.hasXPath("//name[text() = 'Luizinho']/../../name", Matchers.is("Ana Julia")))
+                .body(Matchers.hasXPath("//name[text() = 'Ana Julia']/following-sibling::filhos", Matchers.allOf(Matchers.containsString("Zezinho"), Matchers.containsString("Luizinho"))))
+                .body(Matchers.hasXPath("/users/user/name", Matchers.is("João da Silva")))
+                .body(Matchers.hasXPath("//name", Matchers.is("João da Silva")))
+                .body(Matchers.hasXPath("/users/user[2]/name", Matchers.is("Maria Joaquina")))
+                .body(Matchers.hasXPath("/users/user[last()]/name", Matchers.is("Ana Julia")))
+                .body(Matchers.hasXPath("count(/users/user/name[contains(., 'n')])", Matchers.is("2")))
+                .body(Matchers.hasXPath("//user[age < 24]/name", Matchers.is("Ana Julia")))
+                .body(Matchers.hasXPath("//user[age > 20 and age < 30]/name", Matchers.is("Maria Joaquina")))
+                .body(Matchers.hasXPath("//user[age > 20][age < 30]/name", Matchers.is("Maria Joaquina")))
+        ;
+
     }
 }
