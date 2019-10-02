@@ -242,7 +242,6 @@ public class HttpVerbsTest {
         Assert.assertThat(insertedUser.getName(), Matchers.is("Rodrigo M"));
         Assert.assertThat(insertedUser.getAge(), Matchers.is(38));
         Assert.assertThat(insertedUser.getSalary(), Matchers.nullValue());
-
     }
 
 }
