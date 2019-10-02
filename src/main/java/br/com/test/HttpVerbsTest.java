@@ -4,6 +4,7 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -181,6 +182,68 @@ public class HttpVerbsTest {
         ;
     }
 
+    @Test
+    public void shoulDeserializeObjectWhenSaveUserUsingObject() {
+        User user = new User("Usuário deserializado", 35);
+
+        User insertedUser = RestAssured.given()
+                .log().all()
+                .contentType("application/json")
+                .body(user)
+                .when()
+                .post("https://restapi.wcaquino.me/users")
+                .then()
+                .log().all()
+                .statusCode(201)
+                .extract().body().as(User.class)
+        ;
+
+        Assert.assertThat(insertedUser.getId(), Matchers.notNullValue());
+        Assert.assertEquals("Usuário deserializado", insertedUser.getName());
+        Assert.assertThat(insertedUser.getAge(), Matchers.is(35));
+    }
+
+    @Test
+    public void shouldSaveUserWithXMLUsingObjetc() {
+        User user = new User("Rodrigo M", 38);
+
+        RestAssured.given()
+                .log().all()
+                .contentType(ContentType.XML)
+                .body(user)
+                .when()
+                .post("https://restapi.wcaquino.me/usersXML")
+                .then()
+                .log().all()
+                .statusCode(201)
+                .body("user.@id", Matchers.is(Matchers.notNullValue()))
+                .body("user.name", Matchers.is("Rodrigo M"))
+                .body("user.age", Matchers.is("38"))
+        ;
+    }
+
+    @Test
+    public void shouldDeserializeXMLWhenSaveUser() {
+        User user = new User("Rodrigo M", 38);
+
+        User insertedUser = RestAssured.given()
+                .log().all()
+                .contentType(ContentType.XML)
+                .body(user)
+                .when()
+                .post("https://restapi.wcaquino.me/usersXML")
+                .then()
+                .log().all()
+                .statusCode(201)
+                .extract().body().as(User.class)
+        ;
+
+        Assert.assertThat(insertedUser.getId(), Matchers.notNullValue());
+        Assert.assertThat(insertedUser.getName(), Matchers.is("Rodrigo M"));
+        Assert.assertThat(insertedUser.getAge(), Matchers.is(38));
+        Assert.assertThat(insertedUser.getSalary(), Matchers.nullValue());
+
+    }
 
 }
 
