@@ -41,7 +41,7 @@ public class DataSubmissionTest {
     public void shouldSubmitValueByHeader() {
         RestAssured
                 .given()
-                .accept(ContentType.XML)
+                    .accept(ContentType.XML)
                 .when()
                     .get("https://restapi.wcaquino.me/v2/users")
                 .then()
