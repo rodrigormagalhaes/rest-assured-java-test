@@ -1,6 +1,7 @@
 package br.com.test;
 
 import io.restassured.http.ContentType;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import static io.restassured.RestAssured.given;
@@ -22,4 +23,18 @@ public class HTML {
             .body("tr.find{it.toString().startsWith('2')}.td[1]", is("Maria Joaquina"))
         ;
     }
+
+    @Test
+    public void shouldDoSearchWithXpathInHTML() {
+        given()
+        .when()
+            .get("https://restapi.wcaquino.me/v2/users?format=clean")
+        .then()
+            .statusCode(200)
+            .contentType(ContentType.HTML)
+            .body(Matchers.hasXPath("count(//table/tr)", is("4")))
+            .body(Matchers.hasXPath("//td[text() = '2']/../td[2]", is("Maria Joaquina")))
+        ;
+    }
+
 }
