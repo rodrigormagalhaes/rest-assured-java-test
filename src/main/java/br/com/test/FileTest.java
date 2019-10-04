@@ -2,9 +2,11 @@ package br.com.test;
 
 import io.restassured.RestAssured;
 import org.hamcrest.Matchers;
+import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.File;
+import java.io.*;
 
 public class FileTest {
 
@@ -20,6 +22,7 @@ public class FileTest {
     }
 
     @Test
+    @Ignore
     public void shouldDoFileUpload() {
         RestAssured.given()
                 .multiPart("arquivo", new File("src/main/resources/teste.png"))
@@ -32,6 +35,7 @@ public class FileTest {
     }
 
     @Test
+    @Ignore
     public void shouldNotDoLargeFileUpload() {
         RestAssured.given()
                 .multiPart("arquivo", new File("src/main/resources/Reactor.pdf"))
@@ -42,4 +46,26 @@ public class FileTest {
                     .statusCode(413)
         ;
     }
+
+    @Test
+    @Ignore
+    public void shouldDoDownload() throws IOException {
+        byte[] image = RestAssured.given()
+                .when()
+                .get("https://restapi.wcaquino.me/download")
+                .then()
+                .statusCode(200)
+                .extract().asByteArray()
+        ;
+
+        File image_ = new File("src/main/resources/file.jpg");
+        OutputStream out = new FileOutputStream(image_);
+        out.write(image);
+        out.close();
+
+        Assert.assertThat(image_.length(), Matchers.lessThan(100000L));
+
+    }
+
+
 }
