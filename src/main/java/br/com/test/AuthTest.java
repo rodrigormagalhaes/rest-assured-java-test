@@ -1,8 +1,13 @@
 package br.com.test;
 
 import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
+import io.restassured.path.xml.XmlPath;
 import org.hamcrest.Matchers;
 import org.junit.Test;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class AuthTest {
 
@@ -85,6 +90,73 @@ public class AuthTest {
                 .statusCode(200)
                 .body("status", Matchers.is("logado"))
         ;
+
+    }
+
+    @Test
+    public void shouldDoAuthWithTokenJWT() {
+        Map<String, String> login = new HashMap<String, String>();
+        login.put("email", "teste@teste.de");
+        login.put("senha", "123456");
+
+
+        //Login na api e pegar o token
+        String token = RestAssured.given()
+                .body(login)
+                .contentType(ContentType.JSON)
+                .when()
+                .post("http://barrigarest.wcaquino.me/signin")
+                .then()
+                .statusCode(200)
+                .extract().path("token")
+        ;
+
+        //Obter as contas
+        RestAssured.given()
+                .header("Authorization", "JWT " + token)
+                .when()
+                    .get("http://barrigarest.wcaquino.me/contas")
+                .then()
+                    .log().all()
+                    .statusCode(200)
+                    .body("nome", Matchers.hasItem("Conta para extrato"))
+        ;
+
+    }
+
+    @Test
+    public void shouldAccessWebApp() {
+        //login
+        String cookie = RestAssured.given()
+                        .formParam("email", "teste@teste.de")
+                        .formParam("senha", "123456")
+                        .contentType(ContentType.URLENC.withCharset("UTF-8"))
+                    .when()
+                        .post("http://seubarriga.wcaquino.me/logar")
+                    .then()
+                        .statusCode(200)
+                        .extract().header("set-cookie")
+        ;
+
+        cookie = cookie.split("=")[1].split(";")[0];
+        System.out.println(cookie);
+
+        //obter conta
+        String body = RestAssured.given()
+                .cookie("connect.sid", cookie)
+                .when()
+                    .get("http://seubarriga.wcaquino.me/contas")
+                .then()
+                    .statusCode(200)
+                    .body("html.body.table.tbody.tr[0].td[0]", Matchers.is("Conta para alterar"))
+                    .extract().body().asString()
+        ;
+
+        System.out.println("------>>>>>");
+
+        XmlPath xmlPath = new XmlPath(XmlPath.CompatibilityMode.HTML, body);
+
+        System.out.println(xmlPath.getString("html.body.table.tbody.tr[0].td[0]"));
 
     }
 
